@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Connect 4</title>
+	<style>
+		.board {
+			display: grid;
+			grid-template-columns: repeat(7, 1fr);
+			grid-template-rows: repeat(6, 1fr);
+			width: 300px;
+			height: 450px;
+			margin: 0 auto;
+		}
+		.board div {
+			border: 1px solid black;
+		}
+		.red, .yellow {
+			border-radius: 50%;
+			height: 100%;
+			width: 100%;
+		}
+		.red {
+			background-color: red;
+		}
+		.yellow {
+			background-color: yellow;
+		}
+		.home-button {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			text-decoration: none;
+			color: black;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<a href="../index.html" class="home-button">Home</a>
+	<h1>Connect 4</h1>
+	<div class="board">
+		<!-- Grid cells will be added here with JavaScript -->
+	</div>
+	<script>
+		const board = document.querySelector('.board');
+	// Create empty grid cells
+	for (let i = 0; i < 42; i++) {
+		const div = document.createElement('div');
+		board.appendChild(div);
+	}
+
+	// Keep track of turn and winner
+	let turn = 'red';
+	let winner = null;
+
+	// Add event listener to each grid cell
+	const cells = document.querySelectorAll('.board div');
+	for (let i = 0; i < cells.length; i++) {
+		cells[i].addEventListener('click', addDisc);
+	}
+
+	// Function to add disc to grid and switch turns
+	function addDisc(event) {
+		const column = event.target.cellIndex;
+		const row = getAvailableRow(column);
+		if (row === null) return; // column is full
+		const disc = document.createElement('div');
+		disc.classList.add(turn);
+		event.target.appendChild(disc);
+		switchTurn();
+		checkForWin(column, row);
+	}
+
+	// Function to find the next available row in a given column
+	function getAvailableRow(column) {
+		const cellsInColumn = document.querySelectorAll(`.board div:nth-child(${column + 1})`);
+		for (let i = cellsInColumn.length - 1; i >= 0; i--) {
+			if (!cellsInColumn[i].hasChildNodes()) return i;
+		}
+		return null;
+    }
+	// Function to switch turns and update current player display
+	function switchTurn() {
+		if (turn === 'red') {
+			turn = 'yellow';
+		} else {
+			turn = 'red';
+		}
+		document.querySelector('h2').textContent = `Current player: ${turn}`;
+	}
+
+	// Function to check for a win
+	function checkForWin(column, row) {
+		// Check for horizontal win
+		const horizontalCells = document.querySelectorAll(`.board div:nth-child(${column + 1})`);
+		let horizontalDiscs = 0;
+		for (let i = 0; i < horizontalCells.length; i++) {
+			if (horizontalCells[i].firstChild && horizontalCells[i].firstChild.classList.contains(turn)) {
+				horizontalDiscs++;
+				if (horizontalDiscs === 4) {
+					winner = turn;
+					endGame();
+					return;
+				}
+			} else {
+				horizontalDiscs = 0;
+			}
+		}
+
+		// Check for vertical win
+		let verticalDiscs = 0;
+		for (let i = row; i >= 0; i--) {
+			const verticalCell = document.querySelector(`.board div:nth-child(${column + 1})`);
+			if (verticalCell.firstChild && verticalCell.firstChild.classList.contains(turn)) {
+				verticalDiscs++;
+				if (verticalDiscs === 4) {
+					winner = turn;
+					endGame();
+					return;
+				}
+			} else {
+				break;
+			}
+			column++;
+		}
+
+		// Check for diagonal win (top left to bottom right)
+		let diagonal1Discs = 0;
+		let currentColumn = column;
+		let currentRow = row;
+		while (currentColumn > 0 && currentRow > 0) {
+			currentColumn--;
+			currentRow--;
+		}
+		while (currentColumn < 7 && currentRow < 6) {
+			const diagonal1Cell = document.querySelector(`.board div:nth-child(${currentColumn + 1})`);
+			if (diagonal1Cell.firstChild && diagonal1Cell.firstChild.classList.contains(turn)) {
+				diagonal1Discs++;
+				if (diagonal1Discs === 4) {
+					winner = turn;
+					endGame();
+					return;
+				}
+			} else {
+				diagonal1Discs = 0;
+			}
+			currentColumn++;
+			currentRow++;
+		}
+
+		// Check for diagonal win (top right to bottom left)
+		let diagonal2Discs = 0;
+		currentColumn = column;
+		currentRow = row;
+		while (currentColumn < 6 && currentRow > 0) {
+			currentColumn++;
+			currentRow--;
+		}
+		while (currentColumn >= 0 && currentRow < 6) {
+			const diagonal2Cell = document.querySelector(`.board div:nth-child(${currentColumn + 1})`);
+			if (diagonal2Cell.firstChild && diagonal2Cell.firstChild.classList.contains(turn)) {
+				diagonal2Discs++;
+				if (diagonal2Discs === 4) {
+					winner = turn;
+					endGame();
+					return;
+				}
+			} else {
+				diagonal2Discs = 0;
+			}
+			currentColumn--;
+			currentRow++;
+		}
+	}
+
+	// Function to end game and display winner
+	function endGame() {
+		const cells = document.querySelectorAll('.board div');
+		for (let i = 0; i < cells.length; i++) {
+			cells[i].removeEventListener('click', addDisc);
+		}
+		document.querySelector('h2').textContent = `Winner: ${winner}`;
+	}
+
+	// Initialize game with empty grid and current player display
+	document.querySelector('h2').textContent = `Current player: ${turn}`;
+</script>
+</body>
+</html>
